@@ -1,4 +1,4 @@
-# t-SNE pytorch Implementation with CUDA
+# CUDA-accelerated t-SNE using PyTorch
 CUDA-accelerated PyTorch implementation of the t-stochastic neighbor embedding algorithm described in [Visualizing Data using t-SNE](https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf). 
 
 ## Installation
@@ -36,13 +36,14 @@ python3 -m tsne_torch --xfile <path> --yfile <path>
 
 ## Example
 
-This is our result compare to result of python implementation.
+This is our result compared to the result of the author's Python implementation on a subset of the MNIST dataset:
+
 * PyTorch result
 
-![pytorch result](images/pytorch.png)
+![pytorch result](https://github.com/palle-k/tsne-pytorch/raw/master/images/pytorch.png)
 * python result
 
-![python result](images/python.png)
+![python result](https://github.com/palle-k/tsne-pytorch/raw/master/images/python.png)
 
 ## Credit
 This code highly inspired by 

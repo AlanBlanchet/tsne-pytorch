@@ -5,8 +5,11 @@ setup(
     description='t-SNE accelerated with PyTorch',
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    version='1.0.0',
+    version='1.0.1',
     license="MIT",
+    project_urls={
+        'Source Code': 'https://github.com/palle-k/tsne-pytorch'
+    },
     install_requires=[
         'torch', 'numpy', 'tqdm'
     ],
