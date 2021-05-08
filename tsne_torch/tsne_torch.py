@@ -198,6 +198,7 @@ def _tsne(X: Union[torch.Tensor, np.ndarray], no_dims: int = 2, initial_dims: in
         # ((N, 1, N).repeat -> (N, no_dims, N).permute -> (N, N, no_dims)) *
         # ((N, no_dims) - (N, 1, no_dims) -> (N, N, no_dims))
         # -> (N, N, no_dims).sum[1] -> (N, no_dims)
+
         dY = torch.sum(
             (PQ * num).unsqueeze(1).repeat(1, no_dims, 1).transpose(2, 1) * (Y.unsqueeze(1) - Y),
             dim=1

@@ -1,5 +1,7 @@
 # CUDA-accelerated t-SNE using PyTorch
-CUDA-accelerated PyTorch implementation of the t-stochastic neighbor embedding algorithm described in [Visualizing Data using t-SNE](https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf). 
+PyTorch implementation of the t-stochastic neighbor embedding algorithm described in [Visualizing Data using t-SNE](https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf). 
+
+While CUDA support is not required for this library, the best performance can be achieved when this library is used on a system with CUDA support.
 
 ## Installation
 
