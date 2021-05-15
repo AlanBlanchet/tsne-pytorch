@@ -5,7 +5,7 @@ While CUDA support is not required for this library, the best performance can be
 
 ## Installation
 
-Requires Python 3.7
+Requires Python 3.7 or later
 
 ### Install via Pip
 
