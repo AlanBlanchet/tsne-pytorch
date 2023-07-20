@@ -13,11 +13,10 @@
 #  Copyright (c) 2020, 2021 Xiao Li, Palle Klewitz. All rights reserved.
 
 import sys
-from typing import Union
+from typing import Union, List, Callable
 
 import numpy as np
 import torch
-
 
 def is_notebook():
     try:
@@ -116,24 +115,16 @@ def _x2p_torch(X: torch.Tensor, tol: float = 1e-5, perplexity: float = 30.0, dev
     return P
 
 
-def _pca_torch(X, no_dims=50):
-    # print("Preprocessing the data using PCA...")
-    (n, d) = X.shape
-    X = X - torch.mean(X, 0)
-
-    (l, M) = torch.eig(torch.mm(X.t(), X), True)
-    # split M real
-    for i in range(d):
-        if l[i, 1] != 0:
-            M[:, i+1] = M[:, i]
-            i += 1
-
-    Y = torch.mm(X, M[:, 0:no_dims])
-    return Y
-
-
 # noinspection PyPep8Naming
-def _tsne(X: Union[torch.Tensor, np.ndarray], no_dims: int = 2, initial_dims: int = 50, perplexity: float = 30.0, max_iter: int = 1000, verbose: bool = False):
+def _tsne(
+        X: Union[torch.Tensor, np.ndarray],
+        no_dims: int = 2,
+        initial_dims: int = 50,
+        perplexity: float = 30.0,
+        max_iter: int = 1000,
+        verbose: bool = False,
+        n_iter_callback: int = 5,
+        callbacks: Callable[[int], torch.tensor]=[]):
     """
         Runs t-SNE on the dataset in the NxD array X to reduce its
         dimensionality to no_dims dimensions. The syntaxis of the function is
@@ -155,7 +146,7 @@ def _tsne(X: Union[torch.Tensor, np.ndarray], no_dims: int = 2, initial_dims: in
         print("initializing...", file=sys.stderr)
     # Initialize variables
     if initial_dims < X.shape[1]:
-        X = _pca_torch(X, initial_dims)
+        X = torch.pca_lowrank(X)[2]
     elif verbose:
         print("skipping PCA because initial_dims is larger than input dimensionality", file=sys.stderr)
     (n, d) = X.shape
@@ -225,6 +216,11 @@ def _tsne(X: Union[torch.Tensor, np.ndarray], no_dims: int = 2, initial_dims: in
         if it == 100:
             P = P / 4.
 
+        # Call the attached callbacks
+        if it % n_iter_callback == 0:
+            for callback in callbacks:
+                callback(it, Y)
+
     # Return solution
     return Y.detach().cpu().numpy()
 
@@ -236,13 +232,17 @@ class TorchTSNE:
             n_iter: int = 1000,
             n_components: int = 2,
             initial_dims: int = 50,
-            verbose: bool = False
+            verbose: bool = False,
+            n_iter_callback: int = 5,
+            callbacks: List[Callable[[int], torch.tensor]] = []
     ):
         self.perplexity = perplexity
         self.n_iter = n_iter
         self.n_components = n_components
         self.initial_dims = initial_dims
         self.verbose = verbose
+        self.n_iter_callback = n_iter_callback
+        self.callbacks = callbacks
 
     # noinspection PyPep8Naming,PyUnusedLocal
     def fit_transform(self, X, y=None):
@@ -260,5 +260,7 @@ class TorchTSNE:
                 initial_dims=self.initial_dims,
                 perplexity=self.perplexity,
                 verbose=self.verbose,
-                max_iter=self.n_iter
+                max_iter=self.n_iter,
+                n_iter_callback=self.n_iter_callback,
+                callbacks=self.callbacks
             )
