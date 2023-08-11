@@ -123,6 +123,7 @@ def _tsne(
         perplexity: float = 30.0,
         max_iter: int = 1000,
         verbose: bool = False,
+        random_state: int=None,
         n_iter_callback: int = 5,
         callbacks: Callable[[int], torch.tensor]=[]):
     """
@@ -144,9 +145,10 @@ def _tsne(
 
     if verbose:
         print("initializing...", file=sys.stderr)
+
     # Initialize variables
     if initial_dims < X.shape[1]:
-        X = torch.pca_lowrank(X)[2]
+        X = torch.pca_lowrank(X,q=initial_dims)[0]
     elif verbose:
         print("skipping PCA because initial_dims is larger than input dimensionality", file=sys.stderr)
     (n, d) = X.shape
@@ -154,7 +156,11 @@ def _tsne(
     final_momentum = 0.8
     eta = 500
     min_gain = 0.01
-    Y = torch.randn(n, no_dims, device=device)
+
+    gen = torch.Generator(device='cuda:0')
+    if random_state:
+        gen = gen.manual_seed(random_state)
+    Y = torch.randn(n, no_dims, device=device, generator=gen)
     iY = torch.zeros(n, no_dims, device=device)
     gains = torch.ones(n, no_dims, device=device)
 
@@ -233,6 +239,7 @@ class TorchTSNE:
             n_components: int = 2,
             initial_dims: int = 50,
             verbose: bool = False,
+            random_state: int = None,
             n_iter_callback: int = 5,
             callbacks: List[Callable[[int], torch.tensor]] = []
     ):
@@ -241,6 +248,7 @@ class TorchTSNE:
         self.n_components = n_components
         self.initial_dims = initial_dims
         self.verbose = verbose
+        self.random_state = random_state
         self.n_iter_callback = n_iter_callback
         self.callbacks = callbacks
 
@@ -262,5 +270,6 @@ class TorchTSNE:
                 verbose=self.verbose,
                 max_iter=self.n_iter,
                 n_iter_callback=self.n_iter_callback,
-                callbacks=self.callbacks
+                callbacks=self.callbacks,
+                random_state=self.random_state
             )
